@@ -10,8 +10,7 @@ and open the template in the editor.
         <title></title>
     </head>
     <body>
-        <?php
-        // put your code here
-        ?>
+        Access the v1 folder<br/>
+        Ex: http://your_url/gcm_chat/v1/user/login
     </body>
 </html>
