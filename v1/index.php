@@ -35,7 +35,7 @@ $app->put('/user/:id', function($user_id) use ($app) {
     global $app;
     // check for required params
     verifyRequiredParams(array('gcm_registration_id'));
-    
+
     // reading post params
     $gcm_registration_id = $app->request->put('gcm_registration_id');
 
@@ -122,23 +122,21 @@ $app->get('/chat_rooms/:id', function($chat_room_id) {
             $response['chat_room'] = $tmp;
         }
 
-        // comment node
-        $cmt = array();
-        $cmt["comment"] = $chat_room["comment"];
-        $cmt["comment_id"] = $chat_room["comment_id"];
-        $cmt["created_at"] = $chat_room["created_at"];
+        if ($chat_room['user_id'] != NULL) {
+            // comment node
+            $cmt = array();
+            $cmt["comment"] = $chat_room["comment"];
+            $cmt["comment_id"] = $chat_room["comment_id"];
+            $cmt["created_at"] = $chat_room["created_at"];
 
-        // user node
-        $user = array();
-        $user['user_id'] = $chat_room['user_id'];
-        $user['name'] = $chat_room['user_name'];
-        $cmt['user'] = $user;
+            // user node
+            $user = array();
+            $user['user_id'] = $chat_room['user_id'];
+            $user['name'] = $chat_room['user_name'];
+            $cmt['user'] = $user;
 
-        // comment
-        $comment = array();
-        $comment['comment'] = $cmt;
-
-        array_push($response["comments"], $comment);
+            array_push($response["comments"], $cmt);
+        }
     }
 
     echoRespnse(200, $response);

@@ -45,7 +45,7 @@ class DbHandler {
         } else {
             // User with same email already existed in the db
             $response["error"] = false;
-            return $this->getUserByEmail($email);
+            $response["user"] = $this->getUserByEmail($email);
         }
 
         return $response;
@@ -133,6 +133,14 @@ class DbHandler {
         }
 
         return $response;
+    }
+    
+    public function getAllChatrooms() {
+        $stmt = $this->conn->prepare("SELECT * FROM chat_rooms");
+        $stmt->execute();
+        $tasks = $stmt->get_result();
+        $stmt->close();
+        return $tasks;
     }
 
     // getting single chat room
