@@ -1,0 +1,174 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 22 Jan, 2016, 10:12:06 PM
+    Author     : Lincoln
+*/
+
+body{
+    width: 100%;
+    margin: 0;
+    padding: 0;   
+    font-family: 'Raleway', sans-serif;
+}
+.header{
+    padding: 150px 0;
+    text-align: center;
+    color: #fff;
+    background: -moz-radial-gradient(center, ellipse cover, rgba(227,71,73,1) 0%, rgba(186,27,31,1) 100%); /* ff3.6+ */
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, rgba(227,71,73,1)), color-stop(100%, rgba(186,27,31,1))); /* safari4+,chrome */
+    background:-webkit-radial-gradient(center, ellipse cover, rgba(227,71,73,1) 0%, rgba(186,27,31,1) 100%); /* safari5.1+,chrome10+ */
+    background: -o-radial-gradient(center, ellipse cover, rgba(227,71,73,1) 0%, rgba(186,27,31,1) 100%); /* opera 11.10+ */
+    background: -ms-radial-gradient(center, ellipse cover, rgba(227,71,73,1) 0%, rgba(186,27,31,1) 100%); /* ie10+ */
+    background:radial-gradient(ellipse at center, rgba(227,71,73,1) 0%, rgba(186,27,31,1) 100%); /* w3c */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e34749', endColorstr='#ba1b1f',GradientType=1 ); /* ie6-9 */
+}
+.header .logo{
+    font-weight: bold;
+    font-size: 30px;
+    display: block;
+    margin: 10px 0;
+    letter-spacing: 3px;
+}
+.header span{
+    display: block;
+    font-size: 50px;
+    font-weight: 100;
+}
+.header span.small{
+    font-size: 25px;
+    font-weight: 300;
+    padding-top: 20px;
+    letter-spacing: 1px;
+}
+.topics{
+    text-align: center;
+    padding-top: 50px;
+}
+.topics span.heading{
+    font-size: 30px;
+    color: #666;
+    display: block;
+}
+.box{
+    width: 900px;
+    margin: 40px auto;
+    border: 1px solid #dedede;
+    background: #f2f4f8;
+}
+.box .usr_container,
+.box .msg_container{
+    float: left;
+    height: 600px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.box .usr_container{
+    width: 350px;
+    border-right: 1px solid #dedede;
+    background: #fff;
+}
+.box .msg_container{
+    width: 548px;
+    position: relative;
+}
+.box ul{
+    margin: 0;
+    padding: 0;
+}
+.box ul li{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    cursor: pointer;
+}
+.box .usr_container ul li{
+    padding: 30px 10px;
+    border-bottom: 1px solid #dedede;
+    font-weight: 400;
+    color: #333;
+    font-size: 18px;
+    background: #fff;
+}
+.box .usr_container ul li.selected{
+    color: #e34749;
+    background: #f2f4f8;
+}
+.box .usr_container ul li:hover{
+    background: #dedede;
+}
+.box .msg_container li{
+    padding: 30px 0;
+}
+.box .msg_container li.others{
+    cursor: auto;
+    text-align: left;
+}
+.box .msg_container li.self{
+    text-align: right;
+    cursor: auto;
+}
+.box .msg_container li .message{
+    margin-left: 10px;
+    background: #fff;
+    width: 300px;
+    display: inline;
+    margin: 20px;
+    border-radius: 3px;
+    padding: 15px;
+    max-width: 400px;
+    font-size: 15px;
+    font-family: arial;
+}
+.box .msg_container li.others .message{
+    -webkit-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+    -moz-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+    box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+}
+.box .msg_container li.self .message{
+    background: #dee2ef;
+    -webkit-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+    -moz-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+    box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+}
+.clear{
+    clear:both;
+}
+.send_container{
+    border-top: 1px solid #dedede;
+    background: #f7f9fd;
+    position: absolute;
+    bottom: 0;
+}
+.send_container textarea{
+    background: #f7f9fd;
+    height: 30px;
+    width: 508px;
+    font-size: 15px;
+    text-align: left;
+    padding: 20px;
+    border: none;
+    resize: none;
+    outline: none;
+}
+.send_container input[type="button"]{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    background: #e34749;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+}
+.box .msg_container li label.name{
+    display: block;
+}
+
