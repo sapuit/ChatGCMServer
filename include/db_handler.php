@@ -12,7 +12,7 @@ class DbHandler {
     private $conn;
 
     function __construct() {
-        require_once dirname(__FILE__) . '/DbConnect.php';
+        require_once dirname(__FILE__) . '/db_connect.php';
         // opening db connection
         $db = new DbConnect();
         $this->conn = $db->connect();
@@ -72,6 +72,59 @@ class DbHandler {
         return $response;
     }
 
+    // fetching single user by id
+    public function getUser($user_id) {
+        $stmt = $this->conn->prepare("SELECT user_id, name, email, gcm_registration_id, created_at FROM users WHERE user_id = ?");
+        $stmt->bind_param("s", $user_id);
+        if ($stmt->execute()) {
+            // $user = $stmt->get_result()->fetch_assoc();
+            $stmt->bind_result($user_id, $name, $email, $gcm_registration_id, $created_at);
+            $stmt->fetch();
+            $user = array();
+            $user["user_id"] = $user_id;
+            $user["name"] = $name;
+            $user["email"] = $email;
+            $user["gcm_registration_id"] = $gcm_registration_id;
+            $user["created_at"] = $created_at;
+            $stmt->close();
+            return $user;
+        } else {
+            return NULL;
+        }
+    }
+
+    // fetching multiple users by ids
+    public function getUsers($user_ids) {
+
+        $users = array();
+        if (sizeof($user_ids) > 0) {
+            $query = "SELECT user_id, name, email, gcm_registration_id, created_at FROM users WHERE user_id IN (";
+
+            foreach ($user_ids as $user_id) {
+                $query .= $user_id . ',';
+            }
+
+            $query = substr($query, 0, strlen($query) - 1);
+            $query .= ')';
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($user = $result->fetch_assoc()) {
+                $tmp = array();
+                $tmp["user_id"] = $user['user_id'];
+                $tmp["name"] = $user['name'];
+                $tmp["email"] = $user['email'];
+                $tmp["gcm_registration_id"] = $user['gcm_registration_id'];
+                $tmp["created_at"] = $user['created_at'];
+                array_push($users, $tmp);
+            }
+        }
+
+        return $users;
+    }
+
     // adding the user to chat room
     public function joinChatRoom($chat_room_id, $user_id) {
         $response = array();
@@ -99,42 +152,42 @@ class DbHandler {
         return $response;
     }
 
-    // commenting on a chat room
-    public function comment($user_id, $chat_room_id, $comment) {
+    // messaging in a chat room / to persional message
+    public function addMessage($user_id, $entity_id, $message, $type) {
         $response = array();
 
-        $stmt = $this->conn->prepare("INSERT INTO comments (chat_room_id, user_id, comment) values(?, ?, ?)");
-        $stmt->bind_param("iis", $chat_room_id, $user_id, $comment);
+        $stmt = $this->conn->prepare("INSERT INTO messages (entity_id, user_id, message, type) values(?, ?, ?, ?)");
+        $stmt->bind_param("iisi", $entity_id, $user_id, $message, $type);
 
         $result = $stmt->execute();
 
         if ($result) {
             $response['error'] = false;
-            $response['message'] = 'Comment posted successfully';
 
-            // get the comment
-            $comment_id = $this->conn->insert_id;
-            $stmt = $this->conn->prepare("SELECT comment_id, user_id, chat_room_id, comment, created_at FROM comments WHERE comment_id = ?");
-            $stmt->bind_param("i", $comment_id);
+            // get the message
+            $message_id = $this->conn->insert_id;
+            $stmt = $this->conn->prepare("SELECT message_id, user_id, entity_id, message, type, created_at FROM messages WHERE message_id = ?");
+            $stmt->bind_param("i", $message_id);
             if ($stmt->execute()) {
-                $stmt->bind_result($comment_id, $user_id, $chat_room_id, $comment, $created_at);
+                $stmt->bind_result($message_id, $user_id, $entity_id, $message, $type, $created_at);
                 $stmt->fetch();
                 $tmp = array();
-                $tmp['comment_id'] = $comment_id;
-                $tmp['chat_room_id'] = $chat_room_id;
-                $tmp['user_id'] = $user_id;
-                $tmp['comment'] = $comment;
+                $tmp['message_id'] = $message_id;
+                $tmp['entity_id'] = $entity_id;
+                $tmp['message'] = $message;
+                $tmp['type'] = $type;
                 $tmp['created_at'] = $created_at;
-                $response['comment'] = $tmp;
+                $response['message'] = $tmp;
             }
         } else {
             $response['error'] = true;
-            $response['message'] = 'Failed to post comment';
+            $response['message'] = 'Failed send message';
         }
 
         return $response;
     }
-    
+
+    // fetching all chat rooms
     public function getAllChatrooms() {
         $stmt = $this->conn->prepare("SELECT * FROM chat_rooms");
         $stmt->execute();
@@ -143,7 +196,7 @@ class DbHandler {
         return $tasks;
     }
 
-    // getting single chat room
+    // fetching single chat room by id
     function getChatRoom($chat_room_id) {
         $stmt = $this->conn->prepare("SELECT cr.chat_room_id, cr.name, cr.created_at as chat_room_created_at, u.name as user_name, c.* FROM chat_rooms cr LEFT JOIN comments c ON c.chat_room_id = cr.chat_room_id LEFT JOIN users u ON u.user_id = c.user_id WHERE cr.chat_room_id = ?");
         $stmt->bind_param("i", $chat_room_id);

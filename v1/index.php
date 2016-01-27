@@ -3,14 +3,14 @@
 error_reporting(-1);
 ini_set('display_errors', 'On');
 
-require_once '../include/DbHandler.php';
+require_once '../include/db_handler.php';
 require '.././libs/Slim/Slim.php';
 
 \Slim\Slim::registerAutoloader();
 
 $app = new \Slim\Slim();
 
-// user login
+// User login
 $app->post('/user/login', function() use ($app) {
     // check for required params
     verifyRequiredParams(array('name', 'email'));
@@ -30,25 +30,27 @@ $app->post('/user/login', function() use ($app) {
 });
 
 
-// updating user
+/***
+ * Updating user
+ *  we use this url to update user's gcm registration id
+ */
 $app->put('/user/:id', function($user_id) use ($app) {
     global $app;
-    // check for required params
+    
     verifyRequiredParams(array('gcm_registration_id'));
 
-    // reading post params
     $gcm_registration_id = $app->request->put('gcm_registration_id');
 
     $db = new DbHandler();
     $response = $db->updateGcmID($user_id, $gcm_registration_id);
 
-    // echo json response
     echoRespnse(200, $response);
 });
 
-// Get all chat rooms
+/***
+ * fetching all chat rooms
+ */
 $app->get('/chat_rooms', function() {
-    global $user_id;
     $response = array();
     $db = new DbHandler();
 
@@ -58,7 +60,7 @@ $app->get('/chat_rooms', function() {
     $response["error"] = false;
     $response["chat_rooms"] = array();
 
-    // looping through result and preparing tasks array
+    // pushing single chat room into array
     while ($chat_room = $result->fetch_assoc()) {
         $tmp = array();
         $tmp["chat_room_id"] = $chat_room["chat_room_id"];
@@ -70,7 +72,10 @@ $app->get('/chat_rooms', function() {
     echoRespnse(200, $response);
 });
 
-// Join a chat room
+/**
+ * Adding user to a chat room so that he will start receving the push
+ * notification whenever there is a new message in the chat room
+ */
 $app->post('/chat_rooms/:id/join', function($chat_room_id) {
     global $app;
     $db = new DbHandler();
@@ -84,22 +89,144 @@ $app->post('/chat_rooms/:id/join', function($chat_room_id) {
     echoRespnse(200, $response);
 });
 
-// Comment in a chat room
-$app->post('/chat_rooms/:id/comment', function($chat_room_id) {
+/**
+ * Messaging in a chat room
+ * Will send push notification using Topic Messaging
+ *  */
+$app->post('/chat_rooms/:id/message', function($chat_room_id) {
     global $app;
     $db = new DbHandler();
 
-    verifyRequiredParams(array('user_id', 'comment'));
+    verifyRequiredParams(array('user_id', 'message'));
 
     $user_id = $app->request->post('user_id');
-    $comment = $app->request->post('comment');
+    $message = $app->request->post('message');
 
-    $response = $db->comment($user_id, $chat_room_id, $comment);
+    $response = $db->addMessage($user_id, $chat_room_id, $message, MESSAGE_TO_CHAT_ROOM);
+
+    if ($response['error'] == false) {
+        require_once __DIR__ . '/../libs/gcm/gcm.php';
+        require_once __DIR__ . '/../libs/gcm/push.php';
+        $gcm = new GCM();
+        $push = new Push();
+
+        // get the user using userid
+        $user = $db->getUser($user_id);
+
+        $data = array();
+        $data['user'] = $user;
+        $data['message'] = $response['message'];
+
+        $push->setTitle("GCM 3.0 Demo");
+        $push->setIsBackground(FALSE);
+        $push->setData($data);
+
+        // sending push message to a topic
+        $gcm->sendToTopic('topic_' . $chat_room_id, $push->getPush());
+
+        $response['user'] = $user;
+        $response['error'] = false;
+    }
 
     echoRespnse(200, $response);
 });
 
-// Get single chat room details including all comments
+
+/**
+ * Sending push notification to a single user
+ * We use user's gcm registration id to send the message
+ * **/
+$app->post('/users/:id/message', function($to_user_id) {
+    global $app;
+    $db = new DbHandler();
+
+    verifyRequiredParams(array('message'));
+
+    $from_user_id = $app->request->post('user_id');
+    $message = $app->request->post('message');
+
+    $response = $db->addMessage($from_user_id, $to_user_id, $message, MESSAGE_TO_USER);
+
+    if ($response['error'] == false) {
+        require_once __DIR__ . '/../libs/gcm/gcm.php';
+        require_once __DIR__ . '/../libs/gcm/push.php';
+        $gcm = new GCM();
+        $push = new Push();
+
+        $user = $db->getUser($to_user_id);
+
+        $data = array();
+        $data['user'] = $user;
+        $data['message'] = $response['message'];
+
+        $push->setTitle("GCM 3.0 Demo");
+        $push->setIsBackground(FALSE);
+        $push->setData($data);
+
+        // sending push message to single user
+        $gcm->send($user['gcm_registration_id'], $push->getPush());
+
+        $response['user'] = $user;
+        $response['error'] = false;
+    }
+
+    echoRespnse(200, $response);
+});
+
+
+/**
+ * Sending push notification to multiple users
+ * We use gcm registration ids to send notification message
+ * At max you can send message to 1000 recipients
+ * **/
+$app->post('/users/message', function() use ($app) {
+
+    $response = array();
+    verifyRequiredParams(array('user_id', 'to', 'message'));
+
+    require_once __DIR__ . '/../libs/gcm/gcm.php';
+    require_once __DIR__ . '/../libs/gcm/push.php';
+
+    $db = new DbHandler();
+
+    $user_id = $app->request->post('user_id');
+    $to_user_ids = array_filter(explode(',', $app->request->post('to')));
+    $message = $app->request->post('message');
+
+    $user = $db->getUser($user_id);
+    $users = $db->getUsers($to_user_ids);
+    
+    $registration_ids = array();
+    
+    // preparing gcm registration ids array
+    foreach ($users as $u){
+        array_push($registration_ids, $u['gcm_registration_id']);
+    }
+
+    // insert messages in db
+    // send push to multiple users
+    $gcm = new GCM();
+    $push = new Push();
+
+    $data = array();
+    $data['user'] = $user;
+    $data['message'] = $message;
+
+    $push->setTitle("GCM 3.0 Demo");
+    $push->setIsBackground(FALSE);
+    $push->setData($data);
+
+    // sending push message to multiple users
+    $gcm->sendMultiple($registration_ids, $push->getPush());
+    
+    $response['error'] = false;
+    
+    echoRespnse(200, $response);
+});
+
+/**
+ * Fetching single chat room including all the chat messages
+ *  */
 $app->get('/chat_rooms/:id', function($chat_room_id) {
     global $app;
     $db = new DbHandler();
@@ -123,16 +250,16 @@ $app->get('/chat_rooms/:id', function($chat_room_id) {
         }
 
         if ($chat_room['user_id'] != NULL) {
-            // comment node
+            // message node
             $cmt = array();
-            $cmt["comment"] = $chat_room["comment"];
-            $cmt["comment_id"] = $chat_room["comment_id"];
+            $cmt["message"] = $chat_room["message"];
+            $cmt["message_id"] = $chat_room["message_id"];
             $cmt["created_at"] = $chat_room["created_at"];
 
             // user node
             $user = array();
             $user['user_id'] = $chat_room['user_id'];
-            $user['name'] = $chat_room['user_name'];
+            $user['name'] = $chat_room['name'];
             $cmt['user'] = $user;
 
             array_push($response["comments"], $cmt);
@@ -185,6 +312,10 @@ function validateEmail($email) {
         echoRespnse(400, $response);
         $app->stop();
     }
+}
+
+function IsNullOrEmptyString($str) {
+    return (!isset($str) || trim($str) === '');
 }
 
 /**

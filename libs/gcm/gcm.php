@@ -1,43 +1,48 @@
 <?php
-
+/**
+ * @author Ravi Tamada
+ * @link URL Tutorial link
+ */
 class GCM {
+
     // constructor
     function __construct() {
         
     }
 
-    /**
-     * Sending Push Notification
-     */
+    // sending push message to single user by gcm registration id
     public function send($to, $message) {
         $fields = array(
             'to' => $to,
             'data' => $message,
         );
-        return $this->makeCurlRequest($fields);
+        return $this->sendPushNotification($fields);
     }
-    
+
+    // Sending message to a topic by topic id
     public function sendToTopic($to, $message) {
         $fields = array(
             'to' => '/topics/' . $to,
             'data' => $message,
         );
-        return $this->makeCurlRequest($fields);
+        return $this->sendPushNotification($fields);
     }
 
-    public function sendMultiple($registatoin_ids, $message) {
+    // sending push message to multiple users by gcm registration ids
+    public function sendMultiple($registration_ids, $message) {
         $fields = array(
-            'registration_ids' => $registatoin_ids,
+            'registration_ids' => $registration_ids,
             'data' => $message,
         );
 
-        return $this->makeCurlRequest($fields);
+        return $this->sendPushNotification($fields);
     }
 
-    private function makeCurlRequest($fields) {
+    // function makes curl request to gcm servers
+    private function sendPushNotification($fields) {
 
         // include config
-        include_once __DIR__ . '/../../include/Config.php';
+        include_once __DIR__ . '/../../include/config.php';
 
         // Set POST variables
         $url = 'https://gcm-http.googleapis.com/gcm/send';
@@ -69,8 +74,10 @@ class GCM {
 
         // Close connection
         curl_close($ch);
-        
+
         return $result;
     }
+
 }
+
 ?>

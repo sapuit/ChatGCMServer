@@ -58,6 +58,7 @@ body{
     margin: 40px auto;
     border: 1px solid #dedede;
     background: #f2f4f8;
+    position: relative;
 }
 .box .usr_container,
 .box .msg_container{
@@ -101,39 +102,52 @@ body{
 .box .usr_container ul li:hover{
     background: #dedede;
 }
+.box .msg_container ul{
+    padding: 10px 0;
+    margin-bottom: 75px;
+}
 .box .msg_container li{
-    padding: 30px 0;
+    padding: 10px 0;
 }
 .box .msg_container li.others{
     cursor: auto;
     text-align: left;
+    padding-left: 20px;
 }
 .box .msg_container li.self{
     text-align: right;
     cursor: auto;
+    padding-right: 20px;
+}
+.box .msg_container li.self label{
+    float: right;
 }
 .box .msg_container li .message{
-    margin-left: 10px;
     background: #fff;
-    width: 300px;
-    display: inline;
-    margin: 20px;
     border-radius: 3px;
     padding: 15px;
     max-width: 400px;
     font-size: 15px;
     font-family: arial;
+    float: left;
+    line-height: 20px;
+    margin: 5px 0 10px 0;
+}
+.box .msg_container li label{
+    float: left;
+    display: block;
+    width: 100%;
+    font-size: 12px;
+    color: #777;
+    font-family: arial;
 }
 .box .msg_container li.others .message{
-    -webkit-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
-    -moz-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
-    box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+    
 }
 .box .msg_container li.self .message{
     background: #dee2ef;
-    -webkit-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
-    -moz-box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
-    box-shadow: 1px 1px 1px 1px rgba(153,153,153,0.5);
+    float: right;
+    display: inline-block;
 }
 .clear{
     clear:both;
@@ -143,11 +157,13 @@ body{
     background: #f7f9fd;
     position: absolute;
     bottom: 0;
+    height:75px;
+    right: 0;
 }
 .send_container textarea{
     background: #f7f9fd;
     height: 30px;
-    width: 508px;
+    width: 550px;
     font-size: 15px;
     text-align: left;
     padding: 20px;
