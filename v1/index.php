@@ -234,7 +234,7 @@ $app->get('/chat_rooms/:id', function($chat_room_id) {
     $result = $db->getChatRoom($chat_room_id);
 
     $response["error"] = false;
-    $response["comments"] = array();
+    $response["messages"] = array();
     $response['chat_room'] = array();
 
     $i = 0;
@@ -259,10 +259,10 @@ $app->get('/chat_rooms/:id', function($chat_room_id) {
             // user node
             $user = array();
             $user['user_id'] = $chat_room['user_id'];
-            $user['name'] = $chat_room['name'];
+            $user['username'] = $chat_room['username'];
             $cmt['user'] = $user;
 
-            array_push($response["comments"], $cmt);
+            array_push($response["messages"], $cmt);
         }
     }
 

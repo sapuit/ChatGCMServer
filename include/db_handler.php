@@ -198,8 +198,9 @@ class DbHandler {
 
     // fetching single chat room by id
     function getChatRoom($chat_room_id) {
-        $stmt = $this->conn->prepare("SELECT cr.chat_room_id, cr.name, cr.created_at as chat_room_created_at, u.name as user_name, c.* FROM chat_rooms cr LEFT JOIN comments c ON c.chat_room_id = cr.chat_room_id LEFT JOIN users u ON u.user_id = c.user_id WHERE cr.chat_room_id = ?");
-        $stmt->bind_param("i", $chat_room_id);
+        $stmt = $this->conn->prepare("SELECT cr.chat_room_id, cr.name, cr.created_at as chat_room_created_at, u.name as username, c.* FROM chat_rooms cr LEFT JOIN messages c ON c.entity_id = cr.chat_room_id LEFT JOIN users u ON u.user_id = c.user_id WHERE cr.chat_room_id = ? AND c.type = ?");
+        $type = MESSAGE_TO_CHAT_ROOM;
+        $stmt->bind_param("ii", $chat_room_id, $type);
         $stmt->execute();
         $tasks = $stmt->get_result();
         $stmt->close();
