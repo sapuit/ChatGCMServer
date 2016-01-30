@@ -134,7 +134,7 @@ $admin_id = $demo->getDemoUser();
                     var selMulti = $.map($(".select_multiple option:selected"), function (el, i) {
                         return $(el).val();
                     });
-                    
+
                     to = selMulti.join(",");
 
                     $.post("v1/users/message",
@@ -307,6 +307,14 @@ $gcm->sendMultiple($registration_ids, $push->getPush());
                 <br/>
                 <textarea id="send_to_multiple" class="textarea_msg" placeholder="Type a message"></textarea><br/>
                 <input id="send_to_multiple_users" type="button" value="Send to multiple users" class="btn_send"/>
+                <img src="loader.gif" id="loader_multiple" class="loader"/>
+            </div>
+
+            <br/>
+            <h2 class="heading">Sending push notification with an `Image`</h2>
+            <div class="container">
+                <textarea id="send_to_multiple" class="textarea_msg" placeholder="Type a message"></textarea><br/>
+                <input id="send_to_multiple_users" type="button" value="Send with image" class="btn_send"/>
                 <img src="loader.gif" id="loader_multiple" class="loader"/>
             </div>
         </div>

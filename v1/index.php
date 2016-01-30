@@ -30,13 +30,13 @@ $app->post('/user/login', function() use ($app) {
 });
 
 
-/***
+/* * *
  * Updating user
  *  we use this url to update user's gcm registration id
  */
 $app->put('/user/:id', function($user_id) use ($app) {
     global $app;
-    
+
     verifyRequiredParams(array('gcm_registration_id'));
 
     $gcm_registration_id = $app->request->put('gcm_registration_id');
@@ -47,7 +47,7 @@ $app->put('/user/:id', function($user_id) use ($app) {
     echoRespnse(200, $response);
 });
 
-/***
+/* * *
  * fetching all chat rooms
  */
 $app->get('/chat_rooms', function() {
@@ -116,9 +116,11 @@ $app->post('/chat_rooms/:id/message', function($chat_room_id) {
         $data = array();
         $data['user'] = $user;
         $data['message'] = $response['message'];
+        $data['chat_room_id'] = $chat_room_id;
 
         $push->setTitle("GCM 3.0 Demo");
         $push->setIsBackground(FALSE);
+        $push->setFlag(PUSH_FLAG_CHATROOM);
         $push->setData($data);
 
         // sending push message to a topic
@@ -135,7 +137,7 @@ $app->post('/chat_rooms/:id/message', function($chat_room_id) {
 /**
  * Sending push notification to a single user
  * We use user's gcm registration id to send the message
- * **/
+ * * */
 $app->post('/users/:id/message', function($to_user_id) {
     global $app;
     $db = new DbHandler();
@@ -161,6 +163,7 @@ $app->post('/users/:id/message', function($to_user_id) {
 
         $push->setTitle("GCM 3.0 Demo");
         $push->setIsBackground(FALSE);
+        $push->setFlag(PUSH_FLAG_USER);
         $push->setData($data);
 
         // sending push message to single user
@@ -178,7 +181,7 @@ $app->post('/users/:id/message', function($to_user_id) {
  * Sending push notification to multiple users
  * We use gcm registration ids to send notification message
  * At max you can send message to 1000 recipients
- * **/
+ * * */
 $app->post('/users/message', function() use ($app) {
 
     $response = array();
@@ -195,11 +198,11 @@ $app->post('/users/message', function() use ($app) {
 
     $user = $db->getUser($user_id);
     $users = $db->getUsers($to_user_ids);
-    
+
     $registration_ids = array();
-    
+
     // preparing gcm registration ids array
-    foreach ($users as $u){
+    foreach ($users as $u) {
         array_push($registration_ids, $u['gcm_registration_id']);
     }
 
@@ -208,19 +211,29 @@ $app->post('/users/message', function() use ($app) {
     $gcm = new GCM();
     $push = new Push();
 
+    // creating tmp message, skipping database insertion
+    $msg = array();
+    $msg['message'] = $message;
+    $msg['message_id'] = '';
+    $msg['entity_id'] = '';
+    $msg['type'] = '';
+    $msg['created_at'] = '2016-01-06 11:56:01';
+
     $data = array();
     $data['user'] = $user;
-    $data['message'] = $message;
+    $data['message'] = $msg;
+    $data['image'] = 'http://www.androidhive.info/wp-content/uploads/2016/01/Air-1.png';
 
     $push->setTitle("GCM 3.0 Demo");
     $push->setIsBackground(FALSE);
+    $push->setFlag(PUSH_FLAG_USER);
     $push->setData($data);
 
     // sending push message to multiple users
     $gcm->sendMultiple($registration_ids, $push->getPush());
-    
+
     $response['error'] = false;
-    
+
     echoRespnse(200, $response);
 });
 

@@ -14,6 +14,9 @@ class Push{
     // flag indicating background task on push received
     private $is_background;
     
+    // flag to indicate the type of notification
+    private $flag;
+    
     function __construct() {
         
     }
@@ -30,10 +33,15 @@ class Push{
         $this->is_background = $is_background;
     }
     
+    public function setFlag($flag){
+        $this->flag = $flag;
+    }
+    
     public function getPush(){
         $res = array();
         $res['title'] = $this->title;
         $res['is_background'] = $this->is_background;
+        $res['flag'] = $this->flag;
         $res['data'] = $this->data;
         
         return $res;
