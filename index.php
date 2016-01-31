@@ -154,6 +154,35 @@ $admin_id = $demo->getDemoUser();
                         $('#loader_multiple').hide();
                     });
                 });
+                
+                $('input#send_to_multiple_users_with_image').on('click', function () {
+                    
+                    var msg = $('#send_to_multiple_with_image').val();
+                    if (msg.trim().length === 0) {
+                        alert('Enter a message');
+                        return;
+                    }
+
+                    $('#send_to_multiple_with_image').val('');
+                    $('#loader_multiple_with_image').show();
+
+                    $.post("v1/users/send_to_all",
+                            {user_id: user_id, message: msg},
+                    function (data) {
+                        if (data.error === false) {
+                            $('#loader_multiple_with_image').hide();
+                            alert('Push notification sent successfully to multiple users');
+                        } else {
+                            alert('Sorry! Unable to send message');
+                        }
+                    }).done(function () {
+
+                    }).fail(function () {
+                        alert('Sorry! Unable to send message');
+                    }).always(function () {
+                        $('#loader_topic_with_image').hide();
+                    });
+                });
 
                 function scrollToBottom(cls) {
                     $('.' + cls).scrollTop($('.' + cls + ' ul li').last().position().top + $('.' + cls + ' ul li').last().height());
@@ -313,9 +342,9 @@ $gcm->sendMultiple($registration_ids, $push->getPush());
             <br/>
             <h2 class="heading">Sending push notification with an `Image`</h2>
             <div class="container">
-                <textarea id="send_to_multiple" class="textarea_msg" placeholder="Type a message"></textarea><br/>
-                <input id="send_to_multiple_users" type="button" value="Send with image" class="btn_send"/>
-                <img src="loader.gif" id="loader_multiple" class="loader"/>
+                <textarea id="send_to_multiple_with_image" class="textarea_msg" placeholder="Type a message"></textarea><br/>
+                <input id="send_to_multiple_users_with_image" type="button" value="Send with image" class="btn_send"/>
+                <img src="loader.gif" id="loader_multiple_with_image" class="loader"/>
             </div>
         </div>
         <br/><br/>

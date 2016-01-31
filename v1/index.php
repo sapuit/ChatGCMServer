@@ -118,7 +118,7 @@ $app->post('/chat_rooms/:id/message', function($chat_room_id) {
         $data['message'] = $response['message'];
         $data['chat_room_id'] = $chat_room_id;
 
-        $push->setTitle("GCM 3.0 Demo");
+        $push->setTitle("Google Cloud Messaging");
         $push->setIsBackground(FALSE);
         $push->setFlag(PUSH_FLAG_CHATROOM);
         $push->setData($data);
@@ -160,8 +160,9 @@ $app->post('/users/:id/message', function($to_user_id) {
         $data = array();
         $data['user'] = $user;
         $data['message'] = $response['message'];
+        $data['image'] = '';
 
-        $push->setTitle("GCM 3.0 Demo");
+        $push->setTitle("Google Cloud Messaging");
         $push->setIsBackground(FALSE);
         $push->setFlag(PUSH_FLAG_USER);
         $push->setData($data);
@@ -222,9 +223,9 @@ $app->post('/users/message', function() use ($app) {
     $data = array();
     $data['user'] = $user;
     $data['message'] = $msg;
-    $data['image'] = 'http://www.androidhive.info/wp-content/uploads/2016/01/Air-1.png';
+    $data['image'] = '';
 
-    $push->setTitle("GCM 3.0 Demo");
+    $push->setTitle("Google Cloud Messaging");
     $push->setIsBackground(FALSE);
     $push->setFlag(PUSH_FLAG_USER);
     $push->setData($data);
@@ -232,6 +233,55 @@ $app->post('/users/message', function() use ($app) {
     // sending push message to multiple users
     $gcm->sendMultiple($registration_ids, $push->getPush());
 
+    $response['error'] = false;
+
+    echoRespnse(200, $response);
+});
+
+$app->post('/users/send_to_all', function() use ($app) {
+
+    $response = array();
+    verifyRequiredParams(array('user_id', 'message'));
+
+    require_once __DIR__ . '/../libs/gcm/gcm.php';
+    require_once __DIR__ . '/../libs/gcm/push.php';
+
+    $db = new DbHandler();
+
+    $user_id = $app->request->post('user_id');
+    $message = $app->request->post('message');
+
+    require_once __DIR__ . '/../libs/gcm/gcm.php';
+    require_once __DIR__ . '/../libs/gcm/push.php';
+    $gcm = new GCM();
+    $push = new Push();
+
+    // get the user using userid
+    $user = $db->getUser($user_id);
+    
+    // creating tmp message, skipping database insertion
+    $msg = array();
+    $msg['message'] = $message;
+    $msg['message_id'] = '';
+    $msg['entity_id'] = '';
+    $msg['type'] = '';
+    $msg['created_at'] = '2016-01-06 11:56:01';
+
+    $data = array();
+    $data['user'] = $user;
+    $data['message'] = $msg;
+    $data['image'] = 'http://www.androidhive.info/wp-content/uploads/2016/01/Air-1.png';
+
+    $push->setTitle("Google Cloud Messaging");
+    $push->setIsBackground(FALSE);
+    $push->setFlag(PUSH_FLAG_USER);
+    $push->setData($data);
+
+    // sending message to topic `global`
+    // On the device every user should subscribe to `global` topic
+    $gcm->sendToTopic('global', $push->getPush());
+
+    $response['user'] = $user;
     $response['error'] = false;
 
     echoRespnse(200, $response);

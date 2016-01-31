@@ -16,6 +16,5 @@ define('MESSAGE_TO_USER', 2);
 // push notification flags
 define('PUSH_FLAG_CHATROOM', 1);
 define('PUSH_FLAG_USER', 2);
-define('PUSH_FLAG_IMAGE', 3);
 
 ?>
