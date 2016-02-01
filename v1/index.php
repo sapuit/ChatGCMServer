@@ -122,6 +122,8 @@ $app->post('/chat_rooms/:id/message', function($chat_room_id) {
         $push->setIsBackground(FALSE);
         $push->setFlag(PUSH_FLAG_CHATROOM);
         $push->setData($data);
+        
+        // echo json_encode($push->getPush());exit;
 
         // sending push message to a topic
         $gcm->sendToTopic('topic_' . $chat_room_id, $push->getPush());
@@ -218,7 +220,7 @@ $app->post('/users/message', function() use ($app) {
     $msg['message_id'] = '';
     $msg['entity_id'] = '';
     $msg['type'] = '';
-    $msg['created_at'] = '2016-01-06 11:56:01';
+    $msg['created_at'] = date('Y-m-d G:i:s');
 
     $data = array();
     $data['user'] = $user;
@@ -265,7 +267,7 @@ $app->post('/users/send_to_all', function() use ($app) {
     $msg['message_id'] = '';
     $msg['entity_id'] = '';
     $msg['type'] = '';
-    $msg['created_at'] = '2016-01-06 11:56:01';
+    $msg['created_at'] = date('Y-m-d G:i:s');
 
     $data = array();
     $data['user'] = $user;

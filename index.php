@@ -18,12 +18,9 @@ $admin_id = $demo->getDemoUser();
         <link href='style.css' rel='stylesheet' type='text/css'>
         <link href='http://api.androidhive.info/gcm/styles/default.css' rel='stylesheet' type='text/css'>
         <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
-        <script type="text/javascript" src="http://api.androidhive.info/gcm/highlight.pack.js"></script>
         <script type="text/javascript">
             var user_id = '<?= $admin_id ?>';
             $(document).ready(function () {
-
-                hljs.initHighlightingOnLoad();
 
                 getChatroomMessages($('#topics li:first').attr('id'));
 
@@ -154,9 +151,9 @@ $admin_id = $demo->getDemoUser();
                         $('#loader_multiple').hide();
                     });
                 });
-                
+
                 $('input#send_to_multiple_users_with_image').on('click', function () {
-                    
+
                     var msg = $('#send_to_multiple_with_image').val();
                     if (msg.trim().length === 0) {
                         alert('Enter a message');
@@ -196,159 +193,100 @@ $admin_id = $demo->getDemoUser();
             <h2>Google Cloud Messaging</h2>
             <h2 class="small">Sending push notifications using Android, PHP & MySQL</h2>
         </div>
+        <div class="container_body">
+            <div class="topics">
+                <h2 class="heading">Download & Install the GCM apk</h2>
+                Download & Install the Google Cloud Messaging <a href="#">apk</a> before trying the demos. <br/><br/>Once installed, refresh this page 
+                to see your name, email in the recipients list.
+            </div>
 
-        <div class="topics">
-            <h2 class="heading">Sending message to a `topic`</h2>
-            <pre>
-                <code class="php">
-require_once __DIR__ . '/libs/gcm/gcm.php';
-require_once __DIR__ . '/libs/gcm/push.php';
-
-$gcm = new GCM();
-$push = new Push();
-
-// chat room id - which is topic id
-$chat_room_id = 4;
-
-// get the user using userid
-$user = $db->getUser($user_id);
-
-$data = array();
-$data['user'] = $user;
-$data['message'] = $response['message'];
-
-$push->setTitle("GCM 3.0 Demo");
-$push->setIsBackground(FALSE);
-$push->setData($data);
-
-// sending push message to a topic
-$gcm->sendToTopic('topic_' . $chat_room_id, $push->getPush());
-                </code>
-            </pre>
-            <div class="box">
-                <div class="usr_container">
-                    <ul id="topics">
-                        <?php
-                        $chatrooms = $demo->getAllChatRooms();
-                        foreach ($chatrooms as $key => $chatroom) {
-                            $cls = $key == 0 ? 'selected' : '';
+            <div class="topics">
+                <div class="separator"></div>
+                <h2 class="heading">Sending message to a `topic`</h2>
+                Select any of the topics below and send a message.<br/><br/>
+                <div class="box">
+                    <div class="usr_container">
+                        <ul id="topics">
+                            <?php
+                            $chatrooms = $demo->getAllChatRooms();
+                            foreach ($chatrooms as $key => $chatroom) {
+                                $cls = $key == 0 ? 'selected' : '';
+                                ?>
+                                <li id="<?= $chatroom['chat_room_id'] ?>" class="<?= $cls ?>">
+                                    <label><?= $chatroom['name'] ?></label>
+                                    <span>topic_<?= $chatroom['chat_room_id'] ?></span>
+                                </li>
+                                <?php
+                            }
                             ?>
-                            <li id="<?= $chatroom['chat_room_id'] ?>" class="<?= $cls ?>">
-                                <label><?= $chatroom['name'] ?></label>
-                                <span>topic_<?= $chatroom['chat_room_id'] ?></span>
-                            </li>
+                        </ul>
+                    </div>
+                    <div class="msg_container msg_container_topic">
+                        <ul id="topic_messages"></ul>
+                    </div>
+                    <div class="send_container">
+                        <textarea placeholder="Type a message here" id="send_to_topic_message"></textarea>
+                        <input id="send_to_topic" type="button" value="Send to Topic"/>
+                        <img src="loader.gif" id="loader_topic" class="loader"/>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <br/>
+                <div class="separator"></div>
+                <h2 class="heading">Sending message to `Single User`</h2>
+                Select your name from the below recipients and send a message<br/><br/>
+
+                <div class="container">
+                    <select class="select_single">
+                        <?php
+                        $users = $demo->getAllUsers();
+                        foreach ($users as $key => $user) {
+                            ?>
+                            <option value="<?= $user['user_id'] ?>"><?= $user['name'] ?> (<?= $user['email'] ?>)</option>
                             <?php
                         }
                         ?>
-                    </ul>
+                    </select><br/>
+                    <textarea id="send_to_single" class="textarea_msg" placeholder="Type a message"></textarea><br/>
+                    <input id="send_to_single_user" type="button" value="Send to single user" class="btn_send"/>
+                    <img src="loader.gif" id="loader_single" class="loader"/>
                 </div>
-                <div class="msg_container msg_container_topic">
-                    <ul id="topic_messages"></ul>
-                </div>
-                <div class="send_container">
-                    <textarea placeholder="Type a message here" id="send_to_topic_message"></textarea>
-                    <input id="send_to_topic" type="button" value="Send to Topic"/>
-                    <img src="loader.gif" id="loader_topic" class="loader"/>
-                </div>
-                <div class="clear"></div>
-            </div>
-            <h2 class="heading">Sending message to `Single User`</h2>
-            <pre>
-                <code class="php">
-require_once __DIR__ . '/libs/gcm/gcm.php';
-require_once __DIR__ . '/libs/gcm/push.php';
-
-$gcm = new GCM();
-$push = new Push();
-
-$user = $db->getUser($to_user_id);
-
-$data = array();
-$data['user'] = $user;
-$data['message'] = $response['message'];
-
-$push->setTitle("GCM 3.0 Demo");
-$push->setIsBackground(FALSE);
-$push->setData($data);
-
-// sending push message to single user
-$gcm->send($user['gcm_registration_id'], $push->getPush());
-                </code>
-            </pre>
-            <div class="container">
-                <select class="select_single">
-                    <?php
-                    $users = $demo->getAllUsers();
-                    foreach ($users as $key => $user) {
-                        ?>
-                        <option value="<?= $user['user_id'] ?>"><?= $user['name'] ?> (<?= $user['email'] ?>)</option>
-                        <?php
-                    }
-                    ?>
-                </select><br/>
-                <textarea id="send_to_single" class="textarea_msg" placeholder="Type a message"></textarea><br/>
-                <input id="send_to_single_user" type="button" value="Send to single user" class="btn_send"/>
-                <img src="loader.gif" id="loader_single" class="loader"/>
-            </div>
-            <h2 class="heading">Sending message to `Multiple Users`</h2>
-            <pre>
-                <code class="php">
-require_once __DIR__ . '/libs/gcm/gcm.php';
-require_once __DIR__ . '/libs/gcm/push.php';
-
-$user = $db->getUser($user_id);
-$users = $db->getUsers($to_user_ids);
-    
-$registration_ids = array();
-    
-// preparing gcm registration ids array
-foreach ($users as $u){
-    array_push($registration_ids, $u['gcm_registration_id']);
-}
-
-// insert messages in db
-// send push to multiple users
-$gcm = new GCM();
-$push = new Push();
-
-$data = array();
-$data['user'] = $user;
-$data['message'] = $message;
-
-$push->setTitle("GCM 3.0 Demo");
-$push->setIsBackground(FALSE);
-$push->setData($data);
-
-// sending push message to multiple users
-$gcm->sendMultiple($registration_ids, $push->getPush());
-</code>
-            </pre>
-            <div class="container">
-                <select multiple class="select_multiple">
-                    <?php
-                    foreach ($users as $key => $user) {
-                        ?>
-                        <option value="<?= $user['user_id'] ?>"><?= $user['name'] ?> (<?= $user['email'] ?>)</option>
-                        <?php
-                    }
-                    ?>
-                </select>
                 <br/>
-                <textarea id="send_to_multiple" class="textarea_msg" placeholder="Type a message"></textarea><br/>
-                <input id="send_to_multiple_users" type="button" value="Send to multiple users" class="btn_send"/>
-                <img src="loader.gif" id="loader_multiple" class="loader"/>
-            </div>
+                <div class="separator"></div>
+                <h2 class="heading">Sending message to `Multiple Users`</h2>
+                Select multiple recipients and send a message. You can use ctrl or shift to select multiple users<br/><br/><br/>
 
-            <br/>
-            <h2 class="heading">Sending push notification with an `Image`</h2>
-            <div class="container">
-                <textarea id="send_to_multiple_with_image" class="textarea_msg" placeholder="Type a message"></textarea><br/>
-                <input id="send_to_multiple_users_with_image" type="button" value="Send with image" class="btn_send"/>
-                <img src="loader.gif" id="loader_multiple_with_image" class="loader"/>
+                <div class="container">
+                    <select multiple class="select_multiple">
+                        <?php
+                        foreach ($users as $key => $user) {
+                            ?>
+                            <option value="<?= $user['user_id'] ?>"><?= $user['name'] ?> (<?= $user['email'] ?>)</option>
+                            <?php
+                        }
+                        ?>
+                    </select>
+                    <br/>
+                    <textarea id="send_to_multiple" class="textarea_msg" placeholder="Type a message"></textarea><br/>
+                    <input id="send_to_multiple_users" type="button" value="Send to multiple users" class="btn_send"/>
+                    <img src="loader.gif" id="loader_multiple" class="loader"/>
+                </div>
+
+                <br/>
+                <div class="separator"></div>
+                <h2 class="heading">Sending push notification with an `Image`</h2>
+                A message with an image attachment will be sent to every user. You have to minimize or close the app in order to see
+                it in action.<br/><br/>
+
+                <div class="container">
+                    <textarea id="send_to_multiple_with_image" class="textarea_msg" placeholder="Type a message"></textarea><br/>
+                    <input id="send_to_multiple_users_with_image" type="button" value="Send with image" class="btn_send"/>
+                    <img src="loader.gif" id="loader_multiple_with_image" class="loader"/>
+                </div>
             </div>
+            <br/><br/>
+            <br/><br/>
+            <br/><br/>
         </div>
-        <br/><br/>
-        <br/><br/>
-        <br/><br/>
     </body>
 </html>
