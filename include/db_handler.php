@@ -125,39 +125,12 @@ class DbHandler {
         return $users;
     }
 
-    // adding the user to chat room
-    public function joinChatRoom($chat_room_id, $user_id) {
-        $response = array();
-        $stmt = $this->conn->prepare("SELECT * FROM chat_room_people crp WHERE crp.chat_room_id = ? AND crp.user_id = ?");
-        $stmt->bind_param("ii", $chat_room_id, $user_id);
-        $stmt->execute();
-        $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $response['error'] = false;
-            $response['message'] = 'User joined chat room successfully!';
-        } else {
-            $stmt = $this->conn->prepare("INSERT INTO chat_room_people(chat_room_id, user_id) values(?, ?)");
-            $stmt->bind_param("ii", $chat_room_id, $user_id);
-            $result = $stmt->execute();
-            if ($result) {
-                $response['error'] = false;
-                $response['message'] = 'User joined chat room successfully!';
-            } else {
-                $response['error'] = true;
-                $response['message'] = 'Failed to join chat room!';
-            }
-        }
-        $stmt->close();
-
-        return $response;
-    }
-
     // messaging in a chat room / to persional message
-    public function addMessage($user_id, $entity_id, $message, $type) {
+    public function addMessage($user_id, $chat_room_id, $message) {
         $response = array();
 
-        $stmt = $this->conn->prepare("INSERT INTO messages (entity_id, user_id, message, type) values(?, ?, ?, ?)");
-        $stmt->bind_param("iisi", $entity_id, $user_id, $message, $type);
+        $stmt = $this->conn->prepare("INSERT INTO messages (chat_room_id, user_id, message) values(?, ?, ?)");
+        $stmt->bind_param("iis", $chat_room_id, $user_id, $message);
 
         $result = $stmt->execute();
 
@@ -166,16 +139,15 @@ class DbHandler {
 
             // get the message
             $message_id = $this->conn->insert_id;
-            $stmt = $this->conn->prepare("SELECT message_id, user_id, entity_id, message, type, created_at FROM messages WHERE message_id = ?");
+            $stmt = $this->conn->prepare("SELECT message_id, user_id, chat_room_id, message, created_at FROM messages WHERE message_id = ?");
             $stmt->bind_param("i", $message_id);
             if ($stmt->execute()) {
-                $stmt->bind_result($message_id, $user_id, $entity_id, $message, $type, $created_at);
+                $stmt->bind_result($message_id, $user_id, $chat_room_id, $message, $created_at);
                 $stmt->fetch();
                 $tmp = array();
                 $tmp['message_id'] = $message_id;
-                $tmp['entity_id'] = $entity_id;
+                $tmp['chat_room_id'] = $chat_room_id;
                 $tmp['message'] = $message;
-                $tmp['type'] = $type;
                 $tmp['created_at'] = $created_at;
                 $response['message'] = $tmp;
             }
@@ -198,9 +170,8 @@ class DbHandler {
 
     // fetching single chat room by id
     function getChatRoom($chat_room_id) {
-        $stmt = $this->conn->prepare("SELECT cr.chat_room_id, cr.name, cr.created_at as chat_room_created_at, u.name as username, c.* FROM chat_rooms cr LEFT JOIN messages c ON c.entity_id = cr.chat_room_id LEFT JOIN users u ON u.user_id = c.user_id WHERE cr.chat_room_id = ? AND c.type = ?");
-        $type = MESSAGE_TO_CHAT_ROOM;
-        $stmt->bind_param("ii", $chat_room_id, $type);
+        $stmt = $this->conn->prepare("SELECT cr.chat_room_id, cr.name, cr.created_at as chat_room_created_at, u.name as username, c.* FROM chat_rooms cr LEFT JOIN messages c ON c.chat_room_id = cr.chat_room_id LEFT JOIN users u ON u.user_id = c.user_id WHERE cr.chat_room_id = ?");
+        $stmt->bind_param("i", $chat_room_id);
         $stmt->execute();
         $tasks = $stmt->get_result();
         $stmt->close();

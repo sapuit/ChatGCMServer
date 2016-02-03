@@ -102,7 +102,7 @@ $app->post('/chat_rooms/:id/message', function($chat_room_id) {
     $user_id = $app->request->post('user_id');
     $message = $app->request->post('message');
 
-    $response = $db->addMessage($user_id, $chat_room_id, $message, MESSAGE_TO_CHAT_ROOM);
+    $response = $db->addMessage($user_id, $chat_room_id, $message);
 
     if ($response['error'] == false) {
         require_once __DIR__ . '/../libs/gcm/gcm.php';
@@ -149,7 +149,7 @@ $app->post('/users/:id/message', function($to_user_id) {
     $from_user_id = $app->request->post('user_id');
     $message = $app->request->post('message');
 
-    $response = $db->addMessage($from_user_id, $to_user_id, $message, MESSAGE_TO_USER);
+    $response = $db->addMessage($from_user_id, $to_user_id, $message);
 
     if ($response['error'] == false) {
         require_once __DIR__ . '/../libs/gcm/gcm.php';
@@ -218,8 +218,7 @@ $app->post('/users/message', function() use ($app) {
     $msg = array();
     $msg['message'] = $message;
     $msg['message_id'] = '';
-    $msg['entity_id'] = '';
-    $msg['type'] = '';
+    $msg['chat_room_id'] = '';
     $msg['created_at'] = date('Y-m-d G:i:s');
 
     $data = array();
@@ -265,8 +264,7 @@ $app->post('/users/send_to_all', function() use ($app) {
     $msg = array();
     $msg['message'] = $message;
     $msg['message_id'] = '';
-    $msg['entity_id'] = '';
-    $msg['type'] = '';
+    $msg['chat_room_id'] = '';
     $msg['created_at'] = date('Y-m-d G:i:s');
 
     $data = array();
